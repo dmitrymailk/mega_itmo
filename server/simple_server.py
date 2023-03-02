@@ -1,5 +1,5 @@
 # import main Flask class and request object
-from flask import Flask, request
+from flask import Flask, request, send_file
 from flask_cors import CORS
 
 from PIL import Image
@@ -19,6 +19,33 @@ from torch.utils.data import random_split, DataLoader
 from torchmetrics import Accuracy
 
 from torchvision import transforms
+
+from omegaconf import OmegaConf
+from IPython.display import Audio, display
+import os
+
+torch.hub.download_url_to_file(
+    "https://raw.githubusercontent.com/snakers4/silero-models/master/models.yml",
+    "latest_silero_models.yml",
+    progress=False,
+)
+models = OmegaConf.load("latest_silero_models.yml")
+
+device = torch.device("cpu")
+torch.set_num_threads(4)
+local_file = "model.pt"
+
+if not os.path.isfile(local_file):
+    torch.hub.download_url_to_file(
+        "https://models.silero.ai/models/tts/ru/v3_1_ru.pt", local_file
+    )
+
+model = torch.package.PackageImporter(local_file).load_pickle("tts_models", "model")
+model.to(device)
+
+example_text = "В недрах тундры выдры в г+етрах т+ырят в вёдра ядра кедров."
+sample_rate = 48000
+speaker = "baya"
 
 
 class VGGNet(nn.Module):
@@ -186,7 +213,7 @@ def create_dumb_phrase(emotion_state):
     if emotion_state == "Neutral":
         return "Согласно моему анализу вероятно у вас все хорошо, так держать!"
     elif emotion_state == "Fear":
-        return "Вам страшно?"
+        return "Вам страшно??"
     elif emotion_state == "Angry":
         return "Гнев это не очень здорово, постарайтесь успокоится"
     elif emotion_state == "Sad":
@@ -208,7 +235,15 @@ def query_example():
             image=image,
         )
         phrase = create_dumb_phrase(emotion_state=emotion)
-        return phrase
+        audio_paths = model.save_wav(
+            text=phrase,
+            speaker=speaker,
+            sample_rate=sample_rate,
+        )
+
+        wav_base64 = base64.b64encode(open("./test.wav", "rb").read())
+
+        return wav_base64
 
     return f"Был получен {request.method} запрос."
 
