@@ -5,16 +5,7 @@ export default {
     return {
       infinitySpeak: "",
       pixiApp: "",
-      chat: [
-        {
-          type: "bot",
-          message: "Hi, how are you?",
-        },
-        {
-          type: "user",
-          message: "Hi",
-        },
-      ],
+      chat: [],
     };
   },
   async mounted() {
@@ -46,13 +37,13 @@ export default {
     models.forEach((model) => {
       pixiApp.stage.addChild(model);
 
-      const scaleX = (innerWidth * 1) / model.width;
+      // const scaleX = (innerWidth * 1) / model.width;
       const scaleY = (innerHeight * 1) / model.height;
 
       // // fit the window
-      model.scale.set(Math.min(scaleX, scaleY));
+      // model.scale.set(Math.min(scaleX, scaleY));
 
-      model.y = innerHeight * 0.4;
+      model.y = innerHeight * 0.1;
       model.x = innerHeight * 0.4;
     });
 
@@ -106,6 +97,7 @@ export default {
       this.pixiApp.ticker.remove(this.infinitySpeak);
     },
     take_snapshot() {
+      const _this = this;
       // take snapshot and get image data
       window.Webcam.snap(function (data_uri) {
         // display results in page
@@ -119,7 +111,16 @@ export default {
             },
           })
           .then((e) => {
-            console.log(e);
+            console.log(e, e.data);
+            let message = e.data.phrase;
+
+            _this.chat.push({
+              type: "bot",
+              message: message,
+            });
+            console.log(_this.$refs.myAudio);
+            _this.$refs.myAudio.src = `data:audio/wav;base64,${e.data.wav_base64}`;
+            _this.$refs.myAudio.play();
           });
       });
     },
@@ -259,6 +260,7 @@ export default {
   </div>
   <div class="hidden">
     <div id="my_camera"></div>
+    <audio src="" id="speak_audio" ref="myAudio"></audio>
   </div>
 </template>
 
