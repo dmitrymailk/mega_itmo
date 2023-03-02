@@ -3,9 +3,18 @@ export default {
   name: "App",
   data() {
     return {
-      message: "Hello Vue!",
       infinitySpeak: "",
       pixiApp: "",
+      chat: [
+        {
+          type: "bot",
+          message: "Hi, how are you?",
+        },
+        {
+          type: "user",
+          message: "Hi",
+        },
+      ],
     };
   },
   async mounted() {
@@ -16,7 +25,7 @@ export default {
 
     const live2d = PIXI.live2d;
     const container = window.document.querySelector(".my-app");
-    console.log(window.height);
+
     const pixiApp = new PIXI.Application({
       view: document.getElementById("canvas"),
       autoStart: true,
@@ -49,7 +58,6 @@ export default {
 
     const model2 = models[0];
 
-    let soundCounter = 0;
     let infinitySpeak = (del) => {
       // console.log(model2.internalModel.motionManager);
       const animationGroup =
@@ -59,7 +67,7 @@ export default {
       }
     };
     this.infinitySpeak = infinitySpeak;
-    pixiApp.ticker.add(infinitySpeak);
+    // pixiApp.ticker.add(infinitySpeak);
 
     model2.on("hit", (hitAreas) => {
       if (hitAreas.includes("body")) {
@@ -84,10 +92,36 @@ export default {
       model.on("pointerupoutside", () => (model.dragging = false));
       model.on("pointerup", () => (model.dragging = false));
     }
+
+    window.Webcam.set({
+      width: 320,
+      height: 240,
+      image_format: "jpeg",
+      jpeg_quality: 90,
+    });
+    window.Webcam.attach("#my_camera");
   },
   methods: {
     stopSpeak() {
       this.pixiApp.ticker.remove(this.infinitySpeak);
+    },
+    take_snapshot() {
+      // take snapshot and get image data
+      window.Webcam.snap(function (data_uri) {
+        // display results in page
+        console.log("data_uri");
+        window
+          .axios({
+            method: "post",
+            url: "http://127.0.0.1:5000/analyse-mood/",
+            data: {
+              image: data_uri,
+            },
+          })
+          .then((e) => {
+            console.log(e);
+          });
+      });
     },
   },
 };
@@ -106,192 +140,42 @@ export default {
           <div class="flex flex-col h-full overflow-x-auto mb-4">
             <div class="flex flex-col h-full">
               <div class="grid grid-cols-12 gap-y-2">
-                <div class="col-start-1 col-end-8 p-3 rounded-lg">
-                  <div class="flex flex-row items-center">
-                    <div
-                      class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0"
-                    >
-                      A
-                    </div>
-                    <div
-                      class="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl"
-                    >
-                      <div>Hey How are you today?</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-start-1 col-end-8 p-3 rounded-lg">
-                  <div class="flex flex-row items-center">
-                    <div
-                      class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0"
-                    >
-                      A
-                    </div>
-                    <div
-                      class="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl"
-                    >
-                      <div>
-                        Lorem ipsum dolor sit amet, consectetur adipisicing
-                        elit. Vel ipsa commodi illum saepe numquam maxime
-                        asperiores voluptate sit, minima perspiciatis.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-start-6 col-end-13 p-3 rounded-lg">
-                  <div class="flex items-center justify-start flex-row-reverse">
-                    <div
-                      class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0"
-                    >
-                      A
-                    </div>
-                    <div
-                      class="relative mr-3 text-sm bg-indigo-100 py-2 px-4 shadow rounded-xl"
-                    >
-                      <div>I'm ok what about you?</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-start-6 col-end-13 p-3 rounded-lg">
-                  <div class="flex items-center justify-start flex-row-reverse">
-                    <div
-                      class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0"
-                    >
-                      A
-                    </div>
-                    <div
-                      class="relative mr-3 text-sm bg-indigo-100 py-2 px-4 shadow rounded-xl"
-                    >
-                      <div>
-                        Lorem ipsum dolor sit, amet consectetur adipisicing. ?
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-start-1 col-end-8 p-3 rounded-lg">
-                  <div class="flex flex-row items-center">
-                    <div
-                      class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0"
-                    >
-                      A
-                    </div>
-                    <div
-                      class="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl"
-                    >
-                      <div>Lorem ipsum dolor sit amet !</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-start-6 col-end-13 p-3 rounded-lg">
-                  <div class="flex items-center justify-start flex-row-reverse">
-                    <div
-                      class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0"
-                    >
-                      A
-                    </div>
-                    <div
-                      class="relative mr-3 text-sm bg-indigo-100 py-2 px-4 shadow rounded-xl"
-                    >
-                      <div>
-                        Lorem ipsum dolor sit, amet consectetur adipisicing. ?
-                      </div>
-                      <div
-                        class="absolute text-xs bottom-0 right-0 -mb-5 mr-2 text-gray-500"
-                      >
-                        Seen
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-start-1 col-end-8 p-3 rounded-lg">
-                  <div class="flex flex-row items-center">
-                    <div
-                      class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0"
-                    >
-                      A
-                    </div>
-                    <div
-                      class="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl"
-                    >
-                      <div>
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                        Perspiciatis, in.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-start-1 col-end-8 p-3 rounded-lg">
-                  <div class="flex flex-row items-center">
-                    <div
-                      class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0"
-                    >
-                      A
-                    </div>
-                    <div
-                      class="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl"
-                    >
+                <template v-for="(item, index) in chat" :key="index">
+                  <template v-if="item['type'] == 'bot'">
+                    <div class="col-start-1 col-end-8 p-3 rounded-lg">
                       <div class="flex flex-row items-center">
-                        <button
-                          class="flex items-center justify-center bg-indigo-600 hover:bg-indigo-800 rounded-full h-8 w-10"
+                        <div
+                          class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0"
                         >
-                          <svg
-                            class="w-6 h-6 text-white"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="1.5"
-                              d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                            ></path>
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="1.5"
-                              d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                            ></path>
-                          </svg>
-                        </button>
-                        <div class="flex flex-row items-center space-x-px ml-4">
-                          <div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-4 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-8 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-8 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-10 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-10 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-12 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-10 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-6 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-5 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-4 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-3 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-10 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-10 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-8 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-8 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-1 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-1 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-8 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-8 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                          <div class="h-4 w-1 bg-gray-500 rounded-lg"></div>
+                          BOT
+                        </div>
+                        <div
+                          class="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl"
+                        >
+                          <div>{{ item["message"] }}</div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
+                  </template>
+                  <template v-else>
+                    <div class="col-start-6 col-end-13 p-3 rounded-lg">
+                      <div
+                        class="flex items-center justify-start flex-row-reverse"
+                      >
+                        <div
+                          class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0"
+                        >
+                          YOU
+                        </div>
+                        <div
+                          class="relative mr-3 text-sm bg-indigo-100 py-2 px-4 shadow rounded-xl"
+                        >
+                          <div>{{ item["message"] }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                </template>
               </div>
             </div>
           </div>
@@ -325,6 +209,7 @@ export default {
                   class="flex w-full border rounded-xl focus:outline-none focus:border-indigo-300 pl-4 h-10"
                 />
                 <button
+                  @click="take_snapshot"
                   class="absolute flex items-center justify-center h-full w-12 right-0 top-0 text-gray-400 hover:text-gray-600"
                 >
                   <svg
@@ -372,6 +257,15 @@ export default {
       </div>
     </div>
   </div>
+  <div class="hidden">
+    <div id="my_camera"></div>
+  </div>
 </template>
 
-<style></style>
+<style>
+#my_camera {
+  width: 32px;
+  height: 32px;
+  border: 1px solid black;
+}
+</style>
