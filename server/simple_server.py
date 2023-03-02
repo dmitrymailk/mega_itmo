@@ -182,6 +182,19 @@ app = Flask(__name__)
 CORS(app)
 
 
+def create_dumb_phrase(emotion_state):
+    if emotion_state == "Neutral":
+        return "Согласно моему анализу вероятно у вас все хорошо, так держать!"
+    elif emotion_state == "Fear":
+        return "Вам страшно?"
+    elif emotion_state == "Angry":
+        return "Гнев это не очень здорово, постарайтесь успокоится"
+    elif emotion_state == "Sad":
+        return "Не грусти, че такой грустный?"
+    else:
+        return "У вас всё хорошо?"
+
+
 @app.route("/analyse-mood/", methods=["POST"])
 def query_example():
     if request.method == "POST":
@@ -189,12 +202,13 @@ def query_example():
         image = str(content["image"])
         image = image.replace("data:image/jpeg;base64,", "")
         image = Image.open(BytesIO(base64.b64decode(image)))
-        # im.save("test.jpg")
+        image.save("test.jpg")
         emotion = predict_emotion(
             model=modelEmotion,
             image=image,
         )
-        return emotion
+        phrase = create_dumb_phrase(emotion_state=emotion)
+        return phrase
 
     return f"Был получен {request.method} запрос."
 
