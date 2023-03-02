@@ -6,4 +6,4 @@
 - [model assets](https://cdn.jsdelivr.net/gh/guansss/pixi-live2d-display@0.4.0/test/assets/shizuku/sounds/)
 - [PIXI2d documentation API](https://pixijs.download/release/docs/PIXI.Ticker.html)
 - [ready eyes tracking](https://codepen.io/mediapipe/details/KKgVaPJ)
-- [FER-2013 dataset kaggle](https://www.kaggle.com/datasets/msambare/fer2013?select=train)
+- [Facial-Expression-Classification-Dataset(3Classes)](https://www.kaggle.com/datasets/nightfury007/fercustomdataset-3classes)

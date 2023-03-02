@@ -160,3 +160,10 @@ cython_debug/
 #.idea/
 env
 FER-2013
+*.zip
+*.tar.gz
+cifar*
+wandb-lightning
+wandb
+fer2013
+img
