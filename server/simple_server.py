@@ -1,5 +1,5 @@
 # import main Flask class and request object
-from flask import Flask, request, send_file
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 from PIL import Image
@@ -15,6 +15,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from torch.utils.data import random_split, DataLoader
+import torchaudio
 
 from torchmetrics import Accuracy
 
@@ -24,6 +25,7 @@ from omegaconf import OmegaConf
 from IPython.display import Audio, display
 import os
 
+
 torch.hub.download_url_to_file(
     "https://raw.githubusercontent.com/snakers4/silero-models/master/models.yml",
     "latest_silero_models.yml",
@@ -31,21 +33,21 @@ torch.hub.download_url_to_file(
 )
 models = OmegaConf.load("latest_silero_models.yml")
 
+language = "ru"
+model_id = "v3_1_ru"
 device = torch.device("cpu")
-torch.set_num_threads(4)
-local_file = "model.pt"
 
-if not os.path.isfile(local_file):
-    torch.hub.download_url_to_file(
-        "https://models.silero.ai/models/tts/ru/v3_1_ru.pt", local_file
-    )
-
-model = torch.package.PackageImporter(local_file).load_pickle("tts_models", "model")
-model.to(device)
-
-example_text = "В недрах тундры выдры в г+етрах т+ырят в вёдра ядра кедров."
+TTSModel, example_text = torch.hub.load(
+    repo_or_dir="snakers4/silero-models",
+    model="silero_tts",
+    language=language,
+    speaker=model_id,
+)
+TTSModel.to(device)
 sample_rate = 48000
-speaker = "baya"
+speaker = "xenia"
+put_accent = True
+put_yo = True
 
 
 class VGGNet(nn.Module):
@@ -235,15 +237,26 @@ def query_example():
             image=image,
         )
         phrase = create_dumb_phrase(emotion_state=emotion)
-        audio_paths = model.save_wav(
+        audio = TTSModel.apply_tts(
             text=phrase,
             speaker=speaker,
             sample_rate=sample_rate,
+            put_accent=put_accent,
+            put_yo=put_yo,
         )
+        audio = Audio(audio, rate=sample_rate)
+
+        with open("./test.wav", "wb") as f:
+            f.write(audio.data)
 
         wav_base64 = base64.b64encode(open("./test.wav", "rb").read())
 
-        return wav_base64
+        if os.path.exists("./test.wav"):
+            os.remove("./test.wav")
+
+        return jsonify(
+            {"wav_base64": str(wav_base64), "phrase": str(phrase)},
+        )
 
     return f"Был получен {request.method} запрос."
 
